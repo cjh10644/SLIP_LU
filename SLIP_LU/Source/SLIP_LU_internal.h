@@ -723,4 +723,114 @@ SLIP_info slip_trip_to_mat
     int32_t nz          // Number of nonzeros in the matrix
 );
 
+
+typedef struct
+{
+    int32_t last_trial_bs;// column index that bs last updated, defaulted 0
+    int32_t last_trial_x; // column index that x last updated, defaulted 0
+    int32_t nz;           // number of nonzero in this column
+    //int32_t nzmax;        // allocated size for the vectors
+    int32_t *i;           // row indices
+    size_t *bs;           // estimated bit size in i-th entry
+    mpz_t *x;             // previously calculated to be the (last_trial)-th
+                          // column of LU
+} slip_column;
+
+
+// This function delete the slip_column struct and set the pointer to NULL
+
+void slip_delete_column
+(   
+    slip_column **col
+);
+
+#if 0
+typedef struct
+{
+    slip_column **columns;  // columns of the matrix
+    int32_t n;             // number of columns
+} slip_columns_of_M;
+
+// This function delete the slip_columns_of_M struct
+
+void slip_delete_columnsofM
+(
+    slip_columns_of_M **M
+);
+
+slip_columns_of_M slip_initialize_columnsofM
+(
+    SLIP_sparse *A
+);
+
+#endif
+
+// This function updates the array of the bit size and their indices in
+// candidate columns that need to be ordered and will be used to determine the
+// best pivot column. We only need to compare the entries below k-th row since
+// the pivots for the first (k-1) rows have been found
+void slip_get_new_bs
+(
+    size_t *bs,                // the array of estimated bit size to be ordered
+    int32_t *index,             // indices of the entries in col to be ordered
+    int32_t *index_size,        // current number of the found indices
+    slip_column *col,           // the candidate column
+    int32_t *pinv,              // inverse of row permutation
+    int32_t cand                // the index of candidate column in original A
+);
+
+// This function initialize and create one column for slip_column_of_M
+slip_column* slip_initialize_column
+(   
+    int32_t nzmax
+);
+
+
+SLIP_info slip_quicksort 
+(
+    int32_t *x,           // the real array that will be ordered
+    int32_t *index,       // index of x in M, be kept in same order as x
+    int32_t **range_stack_out,// a stack whose first two entries give the
+                          // range in index to be ordered
+    int32_t *n_stack,     // number of entries in range_stack
+    int32_t *stack_max_size// the max size of the stack
+);
+
+SLIP_info slip_REF_triangular_update
+(
+    // changed on output
+    slip_column *col,   // the candidate col to be updated
+
+    // changed but will be reset
+    mpz_t *x,           // (k:n)-indexed entries of kth column of L and U
+    int32_t *xi,        // nonzero pattern vector
+    int32_t *h,         // history vector
+
+    // unchanged on output
+    int32_t *pinv,      // inverse of row permutation
+    int32_t *row_perm,  // row permutation
+    int32_t k,          // the column index that col will be in final LU
+    SLIP_sparse *L,     // partially built L matrix upto column k-1
+    mpz_t *rhos         // sequence of pivots
+);
+
+SLIP_info slip_triangular_estimate
+(
+    // changed on output
+    slip_column *col,   // the candidate col whose bit size need to be estimated
+
+    // changed but will be reset
+    int32_t *x,         // estimation result
+    int32_t *xi,        // nonzero pattern vector
+    int32_t *h,         // history vector
+
+    // unchanged on output
+    int32_t *pinv,      // inverse of row permutation
+    int32_t *row_perm,  // row permutation
+    int32_t k,          // the column index that col tend to be in final LU
+    SLIP_sparse *L,     // partially built L matrix upto column k-1
+    int32_t *Lb,        // the bit size of the known L->x
+    int32_t *rhos       // bit size of the sequence of pivots
+);
+
 #endif

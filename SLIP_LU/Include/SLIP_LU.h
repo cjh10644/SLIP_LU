@@ -862,6 +862,15 @@ SLIP_info SLIP_LU_factorize
     SLIP_options *option    // command options
 );
 
+
+SLIP_info SLIP_LU_analyze_and_factorize
+(
+    SLIP_sparse *L,
+    SLIP_sparse *U,
+    SLIP_sparse *A
+);
+
+
 // Solves Ax=b, returning the solution x as a double matrix
 SLIP_info SLIP_solve_double
 (
