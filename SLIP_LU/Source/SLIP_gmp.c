@@ -195,7 +195,7 @@ void slip_gmp_free
             if (slip_gmp_list [i] == p)
             {
                 #ifdef SLIP_GMP_MEMORY_DEBUG
-                printf ("    found at i = %d\n", i) ;
+                printf ("    found at i = %ld\n", i) ;
                 #endif
                 slip_gmp_list [i] = slip_gmp_list [--slip_gmp_nmalloc] ;
                 break ;
@@ -269,7 +269,7 @@ void slip_gmp_dump ( )
     {
         for (int64_t i = 0 ; i < slip_gmp_nmalloc ; i++)
         {
-            printf ("    slip_gmp_list [%d] = %p\n", i, slip_gmp_list [i]) ;
+            printf ("    slip_gmp_list [%ld] = %p\n", i, slip_gmp_list [i]) ;
         }
     }
 }
@@ -488,6 +488,23 @@ SLIP_info SLIP_mpz_init2
 
     // call mpz_init2
     mpz_init2(x, (unsigned long int) size);
+
+    // Finish the wrapper and return 0 if successful
+    SLIP_GMP_WRAPPER_FINISH;
+    return SLIP_OK;
+}
+/* Purpose: Safely initialize and set an mpz_t number x = y */
+SLIP_info SLIP_mpz_init_set
+(
+    mpz_t x,
+    const mpz_t y
+)
+{
+    // Start the GMP wrapper
+    SLIP_GMPZ_WRAPPER_START(x);
+
+    // call mpz_init_set
+    mpz_init_set(x, y);
 
     // Finish the wrapper and return 0 if successful
     SLIP_GMP_WRAPPER_FINISH;
@@ -1265,6 +1282,25 @@ SLIP_info SLIP_mpfr_set_z
 
     // call mpfr_set_q
     mpfr_set_z(x, y, rnd);
+
+    // Finish the wrapper and return 0 if successful
+    SLIP_GMP_WRAPPER_FINISH;
+    return SLIP_OK;
+}
+
+/* Purpose: Safely set an mpfr number x = |y| */
+SLIP_info SLIP_mpfr_abs
+(
+    mpfr_t x,
+    const mpfr_t y,
+    const mpfr_rnd_t rnd
+)
+{
+    // Start the GMP wrapper
+    SLIP_GMPFR_WRAPPER_START(x);
+
+    // call mpfr_abs
+    mpfr_abs(x, y, rnd);
 
     // Finish the wrapper and return 0 if successful
     SLIP_GMP_WRAPPER_FINISH;

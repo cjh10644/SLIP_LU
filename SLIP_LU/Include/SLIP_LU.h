@@ -867,7 +867,11 @@ SLIP_info SLIP_LU_analyze_and_factorize
 (
     SLIP_sparse *L,
     SLIP_sparse *U,
-    SLIP_sparse *A
+    SLIP_sparse *A,
+    SLIP_LU_analysis *S,
+    mpz_t *rhos,
+    int32_t *pinv,
+    SLIP_options *option
 );
 
 
@@ -1024,6 +1028,8 @@ SLIP_info SLIP_mpz_init(mpz_t x) ;
 
 SLIP_info SLIP_mpz_init2(mpz_t x, const uint64_t size) ;
 
+SLIP_info SLIP_mpz_init_set(mpz_t x, const mpz_t y) ;
+
 SLIP_info SLIP_mpz_set(mpz_t x, const mpz_t y);
 
 SLIP_info SLIP_mpz_set_ui(mpz_t x, const uint64_t y) ;
@@ -1113,6 +1119,8 @@ SLIP_info SLIP_mpfr_set_d(mpfr_t x, const double y, const mpfr_rnd_t rnd) ;
 SLIP_info SLIP_mpfr_set_q(mpfr_t x, const mpq_t y, const mpfr_rnd_t rnd ) ;
 
 SLIP_info SLIP_mpfr_set_z(mpfr_t x, const mpz_t y, const mpfr_rnd_t rnd ) ;
+
+SLIP_info SLIP_mpfr_abs(mpfr_t x, const mpfr_t y, const mpfr_rnd_t rnd) ;
 
 SLIP_info SLIP_mpfr_get_z(mpz_t x, const mpfr_t y, const mpfr_rnd_t rnd) ;
 

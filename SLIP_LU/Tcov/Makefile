@@ -57,9 +57,13 @@ CS =slip_array_div.o slip_array_mul.o slip_back_sub.o SLIP_build_dense_mpz.o \
     slip_reset_mpz_array.o SLIP_scale_x.o SLIP_solve_double.o \
     SLIP_solve_mpq.o slip_sort_xi.o slip_sparse_alloc2.o slip_sparse_alloc.o \
     slip_sparse_collapse.o slip_sparse_realloc.o SLIP_spok.o \
-    slip_trip_to_mat.o tcov_malloc_test.o SLIP_initialize_expert.o
+    slip_trip_to_mat.o tcov_malloc_test.o SLIP_initialize_expert.o \
+    SLIP_LU_analyze_and_factorize.o \
+    slip_REF_triangular_update.o slip_delete_column.o slip_initialize_column.o \
+    slip_delete_cand_columns.o slip_initialize_cand_columns.o \
+    slip_get_new_bs.o slip_quicksort.o slip_triangular_estimate.o
 
-$(CS): ../Include/SLIP_LU.h ../Source/SLIP_LU_internal.h tcov_malloc_test.h ../Demo/demos.h
+$(CS): ../Include/SLIP_LU.h ../Source/SLIP_LU_internal.h ../Source/SLIP_gmp.h tcov_malloc_test.h ../Demo/demos.h
 
 .PRECIOUS: SLIP_%.c slip_%.c SLIPLU.c demos.c
 

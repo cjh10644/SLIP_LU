@@ -11,13 +11,14 @@ LDLIBS += -lm -lgmp -lmpfr -lcolamd -lamd
 CS = ../Lib/libslip.a $(LDLIBS)
 
 
-all: lib example example2 example3 example4 example5 lu
+all: lib example example2 example3 example4 example5 lu test
 	- ./example
 	- ./example2
 	- ./example3
 	- ./example4
 	- ./example5
 	- ./SLIPLU
+	- ./test
 
 lib:
 	( cd ../Lib ; $(MAKE) )
@@ -39,10 +40,13 @@ example5: lib example5.c Makefile
 
 lu: lib SLIPLU.c demos.h demos.c Makefile
 	$(CC) $(LDFLAGS) $(CF) $(I) -o SLIPLU SLIPLU.c demos.c $(CS)
+
+test: lib test.c demos.h demos.c Makefile
+	$(CC) $(LDFLAGS) $(CF) $(I) -o test test.c demos.c $(CS)
 clean:
 	- $(RM) *.o
 
 purge: distclean
 
 distclean: clean
-	- $(RM) -r example example2 example3 example4 example5 SLIPLU *.a *.dSYM *.obj *.dll
+	- $(RM) -r example example2 example3 example4 example5 SLIPLU test *.a *.dSYM *.obj *.dll

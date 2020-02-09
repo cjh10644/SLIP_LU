@@ -182,12 +182,20 @@ SLIP_info SLIP_LU_factorize
     // Allocate L and U.
     SLIP_CHECK(slip_sparse_alloc2(L, n, n, S->lnz));
     SLIP_CHECK(slip_sparse_alloc2(U, n, n, S->unz));
-
+    int32_t col_perm[10]={0, 6, 4, 1, 2, 5, 8, 3, 9, 7 };
+    int32_t row_perm1[10]={6, 0, 5, 2, 8, 4, 9, 3, 7, 1 };
+    for (k = 0; k < n; k++)
+    {
+        S->q[k]=col_perm[k];
+        row_perm[k] = row_perm1[k];
+        pinv[row_perm[k]]= k;
+    }
     //--------------------------------------------------------------------------
     // Iterations 0:n-1 (1:n in standard)
     //--------------------------------------------------------------------------
     for (k = 0; k < n; k++)
     {
+    printf("------------------iteration %d------------------------------\n",k);
         // Column pointers for column k of L and U
         L->p[k] = lnz;
         U->p[k] = unz;
@@ -213,8 +221,10 @@ SLIP_info SLIP_LU_factorize
         SLIP_CHECK(slip_REF_triangular_solve(&top, L, A, k, xi, S->q, rhos,
             pinv, row_perm, h, x));
         // Obtain pivot index
-        SLIP_CHECK(slip_get_pivot(&pivot, x, pivs, n, top, xi, option->pivot,
-            col, k, rhos, pinv, row_perm, option->tol));
+        //SLIP_CHECK(slip_get_pivot(&pivot, x, pivs, n, top, xi, option->pivot,
+         //   col, k, rhos, pinv, row_perm, option->tol));
+        SLIP_CHECK (SLIP_mpz_set(rhos[k], x[row_perm[k]]));
+
         
         //----------------------------------------------------------------------
         // Iterate accross the nonzeros in x

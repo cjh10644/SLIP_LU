@@ -723,19 +723,33 @@ SLIP_info slip_trip_to_mat
     int32_t nz          // Number of nonzeros in the matrix
 );
 
-
+// struct for candidate column info, including row indices, bit size estimation
+// and the solution to L(:,0:k-1)*x=A(:,k) when this candidate column is used
+// for pivot column k=last_trial_x. nz,nz_mpz and max_mpz are the number of
+// nonzero, the number of nonzero mpz and the number of mpz allocated. Note
+// that nz_mpz<=nz<=max_mpz. x[nz_mpz:nz-1] are newly added reachable in this
+// column, while their values are undefined. Each time a column is take as
+// pivot column from candidate list, the allocated mpz entries are not free'd,
+// and nz_mpz will be simply reset to 0.
 typedef struct
 {
     int32_t last_trial_bs;// column index that bs last updated, defaulted 0
     int32_t last_trial_x; // column index that x last updated, defaulted 0
     int32_t nz;           // number of nonzero in this column
-    //int32_t nzmax;        // allocated size for the vectors
+    int32_t nz_mpz;       // number of nonzero mpz in this column
+    int32_t max_mpz;      // max number of mpz that have been allocated
     int32_t *i;           // row indices
     size_t *bs;           // estimated bit size in i-th entry
     mpz_t *x;             // previously calculated to be the (last_trial)-th
                           // column of LU
 } slip_column;
 
+
+// This function initialize and create one column for slip_cand_columns
+slip_column* slip_initialize_column
+(   
+    int32_t nrow
+);
 
 // This function delete the slip_column struct and set the pointer to NULL
 
@@ -744,26 +758,27 @@ void slip_delete_column
     slip_column **col
 );
 
-#if 0
 typedef struct
 {
-    slip_column **columns;  // columns of the matrix
-    int32_t n;             // number of columns
-} slip_columns_of_M;
+    slip_column **columns;  // candidate columns of the matrix
+    int32_t *col_index;     // index of column in A, -1 for no column
+    int32_t n;              // number of columns
+    int32_t nrow;           // number of rows in each column
+} slip_cand_columns;
 
-// This function delete the slip_columns_of_M struct
+// This function delete the slip_cand_columns struct
 
-void slip_delete_columnsofM
+void slip_delete_cand_columns
 (
-    slip_columns_of_M **M
+    slip_cand_columns **M
 );
 
-slip_columns_of_M slip_initialize_columnsofM
+slip_cand_columns *slip_initialize_cand_columns
 (
-    SLIP_sparse *A
+    int32_t ncand,      // number of candidates
+    int32_t nrow        // number of rows in each column
 );
 
-#endif
 
 // This function updates the array of the bit size and their indices in
 // candidate columns that need to be ordered and will be used to determine the
@@ -779,16 +794,10 @@ void slip_get_new_bs
     int32_t cand                // the index of candidate column in original A
 );
 
-// This function initialize and create one column for slip_column_of_M
-slip_column* slip_initialize_column
-(   
-    int32_t nzmax
-);
-
 
 SLIP_info slip_quicksort 
 (
-    int32_t *x,           // the real array that will be ordered
+    size_t *x,            // the real array that will be ordered
     int32_t *index,       // index of x in M, be kept in same order as x
     int32_t **range_stack_out,// a stack whose first two entries give the
                           // range in index to be ordered
@@ -800,11 +809,12 @@ SLIP_info slip_REF_triangular_update
 (
     // changed on output
     slip_column *col,   // the candidate col to be updated
-
-    // changed but will be reset
-    mpz_t *x,           // (k:n)-indexed entries of kth column of L and U
-    int32_t *xi,        // nonzero pattern vector
-    int32_t *h,         // history vector
+    int32_t *x,         // array of indices of nonzeros in col, whose nonzero
+                        // pattern is found using xi. garbage on input,
+                        // modified on output
+    int32_t *xi,        // nonzero pattern vector, first nonzero can be found at
+                        // n - col->nz. garbage on input, modified on output
+    int32_t *h,         // history vector, garbage on input, modified on output
 
     // unchanged on output
     int32_t *pinv,      // inverse of row permutation
@@ -818,19 +828,20 @@ SLIP_info slip_triangular_estimate
 (
     // changed on output
     slip_column *col,   // the candidate col whose bit size need to be estimated
-
-    // changed but will be reset
-    int32_t *x,         // estimation result
-    int32_t *xi,        // nonzero pattern vector
-    int32_t *h,         // history vector
+    int32_t *x,         // array of indices of nonzeros in col, whose nonzero 
+                        // pattern is found using xi. defaulted -1 for each
+                        // entry. garbage on input, modified on output
+    int32_t *xi,        // nonzero pattern vector, first nonzero can be found at
+                        // n - col->nz. garbage on input, modified on output
+    int32_t *h,         // history vector, garbage on input, modified on output
 
     // unchanged on output
     int32_t *pinv,      // inverse of row permutation
     int32_t *row_perm,  // row permutation
     int32_t k,          // the column index that col tend to be in final LU
     SLIP_sparse *L,     // partially built L matrix upto column k-1
-    int32_t *Lb,        // the bit size of the known L->x
-    int32_t *rhos       // bit size of the sequence of pivots
+    size_t *Lb,         // the bit size of the known L->x
+    size_t *rhos        // bit size of the sequence of pivots
 );
 
 #endif

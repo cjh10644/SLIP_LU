@@ -227,20 +227,7 @@ int main( int argc, char* argv[])
     // We now perform symbolic analysis by getting the column preordering of
     // the matrix A. This is done via the SLIP_LU_analyze function. The output
     // of this function is a column permutation Q where we factor the matrix AQ.
-    //--------------------------------------------------------------------------
-
-    clock_t start_col = clock();
-
-    // Column ordering using either AMD, COLAMD or nothing
-    OK(SLIP_LU_analyze(S, A, option));
-    if (option->print_level > 0)
-    {
-        SLIP_print_options(option);
-    }
-
-    clock_t end_col = clock();
     
-    //--------------------------------------------------------------------------
     // Now we perform the SLIP LU factorization to obtain matrices L and U and a
     // row permutation P such that PAQ = LDU. Note that the D matrix is never
     // explicitly constructed or used.
@@ -251,7 +238,7 @@ int main( int argc, char* argv[])
     //--------------------------------------------------------------------------
     clock_t start_factor = clock();
 
-    OK(SLIP_LU_factorize(L, U, A, S, rhos, pinv, option));
+    OK(SLIP_LU_analyze_and_factorize(L, U, A, S, rhos, pinv, option));
 
     clock_t end_factor = clock();
 
@@ -329,7 +316,7 @@ int main( int argc, char* argv[])
         OK(SLIP_print_stats_mpfr(stdout, x_mpfr, nrows, numRHS, check, option));
     }
 
-    double t_sym = (double) (end_col-start_col)/CLOCKS_PER_SEC;
+    double t_sym = 0;//(double) (end_col-start_col)/CLOCKS_PER_SEC;
     double t_factor = (double) (end_factor - start_factor) / CLOCKS_PER_SEC;
     double t_solve =  (double) (end_solve - start_solve) / CLOCKS_PER_SEC;
 

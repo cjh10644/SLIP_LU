@@ -695,6 +695,29 @@ int main( int argc, char* argv[])
                 }
             }
 
+            // test for SLIP_LU_analyze_and_factorize
+            int32_t *pinv = (int32_t*) SLIP_malloc(n*sizeof(int32_t));
+            mpz_t *rhos = SLIP_create_mpz_array(n);
+            SLIP_sparse *L = SLIP_create_sparse();
+            SLIP_sparse *U = SLIP_create_sparse();
+
+            if (!pinv || !L || !U || !rhos)
+            {
+                SLIP_FREE(pinv);
+                SLIP_delete_mpz_array(&rhos, n);
+                SLIP_delete_sparse(&L);
+                SLIP_delete_sparse(&U);
+                SLIP_FREE_WORKSPACE;
+                continue;
+            }
+            TEST_CHECK(SLIP_LU_analyze_and_factorize(L, U, A, S, rhos, pinv,
+                option));
+            SLIP_FREE(pinv);
+            SLIP_delete_mpz_array(&rhos, n);
+            SLIP_delete_sparse(&L);
+            SLIP_delete_sparse(&U);
+
+
             // Column ordering using either AMD, COLAMD or nothing
             TEST_CHECK(SLIP_LU_analyze(S, A, option));
             option->print_level = 3;

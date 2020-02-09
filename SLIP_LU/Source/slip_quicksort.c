@@ -1,6 +1,6 @@
-#include "test.h"
+#include "SLIP_LU_internal.h"
 
-static inline void swap (size_t *a, int32_t *b, int32_t i1. int32_t i2)
+static inline void swap (size_t *a, int32_t *b, int32_t i1, int32_t i2)
 {
     size_t tmp1 = a[i1];
     a[i1] = a[i2];
@@ -22,7 +22,7 @@ static inline void swap (size_t *a, int32_t *b, int32_t i1. int32_t i2)
 
 SLIP_info slip_quicksort
 (
-    int32_t *x,           // the real array that will be ordered
+    size_t *x,            // the real array that will be ordered
     int32_t *index,       // index of x in M, be kept in same order as x
     int32_t **range_stack_out,// a stack whose first two entries give the
                           // range in index to be ordered
@@ -32,8 +32,8 @@ SLIP_info slip_quicksort
 {
     // there must be at least 2 values in range_stack and
     // x and range_stack should have same size
-    if (index == NULL || x == NULL || range_stack == NULL ||
-        n_stack == NULL || *n_stack < 2)
+    if (index == NULL || x == NULL || range_stack_out == NULL ||
+        *range_stack_out == NULL || n_stack == NULL || *n_stack < 2)
     {
         return SLIP_INCORRECT_INPUT;
     }
@@ -137,20 +137,25 @@ SLIP_info slip_quicksort
 
                     else
                     {
-                        // insert the partition
-                        range_stack[*n_stack] = range_stack[(*n_stack)-1]; 
-                        range_stack[(*n_stack)-1] = j+1;
-                        (*n_stack)++;
-                        if (n_stack > stack_max_size)
+                        // need larger sparce
+                        if (*n_stack >= *stack_max_size)
                         {
-                            SLIP_realloc(*range_stack_out);
-                            range_stack = *range_stack_out;
-                            *stack_max_size *= 2;
-                            if()
+                            *range_stack_out = (int32_t*)SLIP_realloc(
+                                *range_stack_out,
+                                *stack_max_size*sizeof(int32_t),
+                                *stack_max_size*2*sizeof(int32_t));
+                            if(*range_stack_out = NULL)
                             {
                                 return SLIP_OUT_OF_MEMORY;
                             }
+                            range_stack = *range_stack_out;
+                            *stack_max_size *= 2;
                         }
+
+                        // insert the partition
+                        range_stack[*n_stack] = range_stack[(*n_stack)-1]; 
+                        range_stack[(*n_stack)-1] = j;
+                        (*n_stack)++;
                         break;
                     }
                 }
