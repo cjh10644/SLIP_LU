@@ -10,7 +10,6 @@ I = -I../Include -I../Source -I../../SuiteSparse_config -I../../COLAMD/Include -
 LDLIBS += -lm -lgmp -lmpfr -lcolamd -lamd
 CS = ../Lib/libslip.a $(LDLIBS)
 
-
 all: lib example example2 example3 example4 example5 lu test
 	- ./example
 	- ./example2
@@ -19,6 +18,12 @@ all: lib example example2 example3 example4 example5 lu test
 	- ./example5
 	- ./SLIPLU
 	- ./test
+
+runtest: lib test
+	- ./test
+
+runlu: lib lu
+	- ./SLIPLU
 
 lib:
 	( cd ../Lib ; $(MAKE) )

@@ -123,17 +123,6 @@ SLIP_info slip_REF_triangular_solve // performs the sparse REF triangular solve
     //--------------------------------------------------------------------------
     for (p = top; p < n; p++)
     {
-        if (k==9)
-        {
-            printf("updating x(%d) p = %d\n",xi[p],p);
-            for (int32_t ii = top; ii < n; ii++)
-            {
-                i = xi[ii];
-                    SLIP_gmp_printf("%d(%Zd) ",i,x[i]);
-            }
-            printf("\n\n");
-        } 
-
         /* Finalize x[j] */
         j = xi[p];                         // First nonzero term
         jnew = pinv[j];                    // Location of nonzero term
@@ -268,13 +257,7 @@ SLIP_info slip_REF_triangular_solve // performs the sparse REF triangular solve
             }
         }
     }
-    printf("initial value i(xi): ");
-    for (p = top; p < n; p++)
-    {
-        i = xi[p];
-            SLIP_gmp_printf("%d(%Zd) ",i,x[i]);
-    }
-    printf("\n");
+
     // Output the beginning of nonzero pattern
     *top_output = top;
     return SLIP_OK;

@@ -138,6 +138,8 @@ int main( int argc, char* argv[])
     char *mat_name, *rhs_name;
     mat_name = "../ExampleMats/test_mat.txt";// Set demo matrix and RHS name
     rhs_name = "../ExampleMats/test_rhs.txt";
+    mat_name = "../ExampleMats/NSR8K_mat.txt";// Set demo matrix and RHS name
+    rhs_name = "../ExampleMats/NSR8K_v.txt";
     //mat_name = "../ExampleMats/10teams_mat.txt";// Set demo matrix and RHS name
     //rhs_name = "../ExampleMats/10teams_v.txt";
 
@@ -332,6 +334,26 @@ int main( int argc, char* argv[])
     double t_sym = (double) (end_col-start_col)/CLOCKS_PER_SEC;
     double t_factor = (double) (end_factor - start_factor) / CLOCKS_PER_SEC;
     double t_solve =  (double) (end_solve - start_solve) / CLOCKS_PER_SEC;
+    size_t size, total_size = 0, rhos_size = 0;
+
+    for (int32_t i = 0; i < nrows; i++)
+    {
+        SLIP_mpz_sizeinbase(&size,rhos[i],2);
+        rhos_size += size;
+    }
+    for (int32_t i = 0; i < L->nz; i++)
+    {
+        SLIP_mpz_sizeinbase(&size,L->x[i],2);
+        total_size += size;
+    }
+    for (int32_t i = 0; i < U->nz; i++)
+    {
+        SLIP_mpz_sizeinbase(&size,U->x[i],2);
+        total_size += size;
+    }
+
+    printf("\nbit size of rhos: \t\t\t%ld", rhos_size);
+    printf("\nbit size of L+U: \t\t\t%ld", total_size-rhos_size);
 
     printf("\nNumber of L+U nonzeros: \t\t%d",
         (L->nz) + (U->nz) - (L->m));

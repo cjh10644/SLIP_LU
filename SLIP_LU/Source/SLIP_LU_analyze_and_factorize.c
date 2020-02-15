@@ -1,5 +1,5 @@
 //TODO
-#define CAND_SIZE 4
+#define CAND_SIZE 10
 #define SLIP_FREE_WORKSPACE         \
 {                              \
     slip_delete_cand_columns(&cands);\
@@ -423,7 +423,7 @@ SLIP_info SLIP_LU_analyze_and_factorize
             col = cands->columns[mincol];
 
             // only need to update for column index > 0
-            if (k != 0)
+            if (k != 0)// TODO is this necessray?
             {
                 SLIP_CHECK(slip_REF_triangular_update(col, x, xi, h, pinv,
                     row_perm, k, L, rhos));
@@ -436,23 +436,23 @@ SLIP_info SLIP_LU_analyze_and_factorize
             {
                 // iterate thru all entries below k to make sure that we
                 // selected the smallest nonzero
-                int32_t min_index = 0;
-                for (i = 1; i < col->nz; i++)
+                int32_t min_index = minrow;
+                for (i = 0; i < col->nz_mpz; i++)
                 {
                     if(pinv[col->i[i]] >= k &&
                        mpz_cmpabs(col->x[min_index],col->x[i]) > 0)
                     {
-                        SLIP_CHECK (SLIP_mpz_sgn (&sgn, col->x[minrow]));
+                        SLIP_CHECK (SLIP_mpz_sgn (&sgn, col->x[i]));
                         if (sgn != 0) {min_index = i;}
                     }
                 }
-                if (min_index != minrow)
+                /*if (min_index != minrow)
                 {
                     SLIP_gmp_printf("new minium found! %d~?(%Zd) index=%d\n",
                         col->i[min_index], col->x[min_index],min_index);
                     SLIP_gmp_printf("                  %d~?(%Zd) index=%d\n",
                         col->i[minrow], col->x[minrow],minrow);
-                }
+                }*/
                 // TODO
                 //minrow = min_index;
 
@@ -509,7 +509,7 @@ SLIP_info SLIP_LU_analyze_and_factorize
                 // update the k-th column of L, Lb and U rhos
                 //--------------------------------------------------------------
                 // Iterate accross the nonzeros in col->x
-                for (int32_t i = n-col->nz; i < n; i++)//TODO FIXME
+                for (i = n-col->nz_mpz; i < n; i++)//TODO FIXME
                 {
                     // j is the index of entry in col, while jnew = col->i[j]
                     // indicates this entry is at jnew-th row
@@ -518,16 +518,16 @@ SLIP_info SLIP_LU_analyze_and_factorize
                         // if k!=0, nonzero pattern is initialized and ordered
                         // based on row permutation, so we iterate thru nonzero
                         // in the known row permutation order using xi
-                        jnew = xi[i];
-                        j = x[jnew];
+                        jnew = xi[i];           // row index
+                        j = x[jnew];            // index in col
                     }
                     else
                     {
                         // otherwise, nonzero pattern is not initialized, so
                         // we simply iterate in the same order as they show in
                         // the slip_column struct
-                        j = i-n+col->nz;
-                        jnew = col->i[j];
+                        j = i-n+col->nz_mpz;   // index in col
+                        jnew = col->i[j];      // row index
                     }
                     // Location of x[j] in final matrix
                     loc = pinv[jnew];
@@ -561,6 +561,7 @@ SLIP_info SLIP_LU_analyze_and_factorize
                         lnz++;
                         if (loc == k)
                         {
+                            //SLIP_gmp_printf("rhos[%d]=%Zd,rpiv=%d(%d)(%d)\n",k,col->x[j], rpiv,col->i[minrow],col->i[j]);
                             // set rhos[k] = L(k,k)
                             SLIP_CHECK(SLIP_mpz_set(rhos[k],col->x[j]));
                             rhos_bs[k] = size;
@@ -585,6 +586,26 @@ SLIP_info SLIP_LU_analyze_and_factorize
             // then the matrix is singular
             if (nthMin >= bs_nz && !foundPivotColumn)
             {
+                printf("%s line %d\n",__FILE__,__LINE__);
+
+                for (int32_t nthcand = 0; nthcand < ncand; nthcand++)
+                {
+                    col = cands->columns[nthcand];
+
+                    if (cands->col_index[nthcand] != -1)
+                    {
+                        printf("k=%d,last trial=%d, A(:,%d)\n",k,col->last_trial_x,cands->col_index[nthcand]);
+                        for (i = 0; i < col->nz_mpz; i++)
+                        {
+                            if(pinv[col->i[i]] >= k)
+                            SLIP_gmp_printf("%Zd ",col->x[i]);
+                            else
+                            SLIP_gmp_printf("(%d)%Zd ",pinv[col->i[i]],col->x[i]);
+                        }
+                        printf("\n");
+                    }
+                }
+
                 SLIP_FREE_WORKSPACE;
                 return SLIP_SINGULAR;
             }

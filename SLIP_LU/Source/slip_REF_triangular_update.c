@@ -25,11 +25,6 @@ SLIP_info slip_REF_triangular_update
     mpz_t *Ax = col->x, *Lx = L->x;
     int32_t last_trial = col->last_trial_x;
 
-    // if col has been updated to be k-th pivot column, then nothing
-    // needs to be done. This happens when this column has multiple minimums
-    // of bit size estimation
-    if (last_trial == k) {return SLIP_OK;}
-
     // iterate across the nonzero mpz in col
     for (ci = 0; ci < col->nz_mpz; ci++)
     {
