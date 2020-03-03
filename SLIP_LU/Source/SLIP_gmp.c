@@ -684,6 +684,25 @@ SLIP_info SLIP_mpz_addmul
 }
 #endif
 
+/* Purpose: Safely and efficiently swap two mpz numbers
+ */
+SLIP_info SLIP_mpz_swap
+(
+    mpz_t x,
+    mpz_t y
+)
+{
+    // Start the GMP wrapper
+    SLIP_GMP_WRAPPER_START;
+
+    // call mpz_swap
+    mpz_swap(x, y);
+
+    // Finish the wrapper and return 0 if successful
+    SLIP_GMP_WRAPPER_FINISH;
+    return SLIP_OK;
+}
+
 /* Purpose: Safely set an mpz number = itself minus a product of
  * mpz numbers, i.e., x = x - y*z
  */

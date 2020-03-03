@@ -874,6 +874,17 @@ SLIP_info SLIP_LU_analyze_and_factorize
     SLIP_options *option
 );
 
+SLIP_info SLIP_LU_analyze_and_factorize1
+(
+    SLIP_sparse *L,
+    SLIP_sparse *U,
+    SLIP_sparse *A,
+    SLIP_LU_analysis *S,
+    mpz_t *rhos,
+    int32_t *pinv,
+    SLIP_options *option
+);
+
 
 // Solves Ax=b, returning the solution x as a double matrix
 SLIP_info SLIP_solve_double
@@ -1053,6 +1064,8 @@ SLIP_info SLIP_mpz_add(mpz_t a, const mpz_t b, const mpz_t c);
 
 SLIP_info SLIP_mpz_addmul(mpz_t x, const mpz_t y, const mpz_t z) ;
 #endif
+
+SLIP_info SLIP_mpz_swap(mpz_t x, mpz_t y);
 
 SLIP_info SLIP_mpz_submul(mpz_t x, const mpz_t y, const mpz_t z);
 

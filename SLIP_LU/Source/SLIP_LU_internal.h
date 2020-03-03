@@ -31,6 +31,9 @@
 # include "colamd.h"
 # include "amd.h"
 
+//TODO delete this
+#include <time.h>
+
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //-------------------------Common Macros----------------------------------------
@@ -738,10 +741,12 @@ typedef struct
     int32_t nz;           // number of nonzero in this column
     int32_t nz_mpz;       // number of nonzero mpz in this column
     int32_t max_mpz;      // max number of mpz that have been allocated
+    int32_t unz;          // number of nonzero in this column of U, initially -1
+    int32_t real_lnz;     // the real number of nz in col that would be in L
     int32_t *i;           // row indices
     size_t *bs;           // estimated bit size in i-th entry
-    mpz_t *x;             // previously calculated to be the (last_trial)-th
-                          // column of LU
+    int32_t *h;           // history vector
+    mpz_t *x;             // calculated result that will be column of LU
 } slip_column;
 
 
@@ -844,4 +849,36 @@ SLIP_info slip_triangular_estimate
     size_t *rhos        // bit size of the sequence of pivots
 );
 
+SLIP_info slip_update_LU
+(
+    SLIP_sparse *L,     // partially built L matrix upto column k-1
+    SLIP_sparse *U,     // partially built U matrix upto column k-1
+    mpz_t  *rhos,       // sequence of pivots
+    size_t *rhos_bs,    // bit size of the sequence of pivots
+    int32_t *rc,
+    slip_column *col,   // the selected candidate column
+    int32_t rpiv,       // the row index for the new pivot
+    int32_t k           // the column index that col will be in final LU
+);
+
+SLIP_info slip_triangular_est
+(
+    // changed on output
+    slip_column *col,   // the candidate col whose bit size need to be estimated
+    int32_t *x,         // array of indices of nonzeros in col, whose nonzero
+                        // pattern is found using xi. defaulted -1 for each
+                        // entry. garbage on input and output
+    int32_t *xi,        // nonzero pattern vector, first nonzero can be found at
+                        // n - col->nz. garbage on input and output
+    int32_t *rc,
+
+    // unchanged on output
+    int32_t *pinv,      // inverse of row permutation
+    int32_t *row_perm,  // row permutation
+    int32_t k,          // the column index that col tend to be in final LU
+    SLIP_sparse *L,     // partially built L matrix upto column k-1
+    mpz_t  *rhos,       // sequence of pivots
+    size_t *rhos_bs,    // bit size of the sequence of pivots
+    int32_t bound       // worst case bit length for each mpz entry
+);
 #endif

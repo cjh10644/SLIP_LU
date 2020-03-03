@@ -37,6 +37,7 @@ SLIP_info SLIP_LU_analyze_and_factorize
     //--------------------------------------------------------------------------
     // initialize variables and allocate memory
     //--------------------------------------------------------------------------
+    double total_time = 0, est_time = 0, init_time = 0, sort_time = 0;
     // infomation of the A matrix
     int32_t n = A->n, nz = A->nz;
 
@@ -283,7 +284,7 @@ SLIP_info SLIP_LU_analyze_and_factorize
         for (int32_t nthcand = 0; nthcand < ncand; nthcand++)
         {
             col = cands->columns[nthcand];
-
+clock_t tic = clock();
             // if the nth candidate has not initialized or has been taken
             if (cands->col_index[nthcand] == -1)
             {
@@ -341,11 +342,15 @@ SLIP_info SLIP_LU_analyze_and_factorize
                 {
                     continue;
                 }
+
             }
+                clock_t toc = clock();
+            init_time = init_time+(double)(toc-tic)/CLOCKS_PER_SEC;
         //printf("-------------------%d-th cand: A(:,%d)-----------------\n",nthcand,cands->col_index[nthcand]);
 
             // Since the bit size is exact as candidate for first col,
             // the estimation process is skipped.
+            tic = clock();
             if (k != 0)
             {
                 // estimate number of digits for column cand
@@ -374,6 +379,8 @@ SLIP_info SLIP_LU_analyze_and_factorize
                     col->max_mpz = col->nz;
                 }
             }
+            toc = clock();
+            est_time = est_time+(double)(toc-tic)/CLOCKS_PER_SEC;
 
             // check if there are too much nonzero added in, reallocate for
             // index array if necessary
@@ -411,23 +418,30 @@ SLIP_info SLIP_LU_analyze_and_factorize
             // try the column with smallest number of digits
             // slip_quicksort only has the first range_stack[stack_nz-1] entries
             // in array well sorted
+            clock_t tic  = clock();
             if (nthMin >= range_stack[stack_nz-1])
             {
                 SLIP_CHECK(slip_quicksort(bs, index, &range_stack, &stack_nz,
                     &stack_max_size));
             }
+            clock_t toc = clock();
+            sort_time = sort_time+(double)(toc-tic)/CLOCKS_PER_SEC;
 
             // get the column index in the candidate list
             int32_t mincol = index[nthMin]/n;
             int32_t minrow = index[nthMin]%n;
             col = cands->columns[mincol];
 
+            tic  = clock();
             // only need to update for column index > 0
             if (k != 0)// TODO is this necessray?
             {
                 SLIP_CHECK(slip_REF_triangular_update(col, x, xi, h, pinv,
                     row_perm, k, L, rhos));
             }
+            toc = clock();
+            total_time = total_time+(double)(toc-tic)/CLOCKS_PER_SEC;
+//printf("time used in REF update: %lf\n", total_time);
 
             // check if the selected pivot is zero
             SLIP_CHECK (SLIP_mpz_sgn (&sgn, col->x[minrow]));
@@ -454,7 +468,7 @@ SLIP_info SLIP_LU_analyze_and_factorize
                         col->i[minrow], col->x[minrow],minrow);
                 }*/
                 // TODO
-                //minrow = min_index;
+                minrow = min_index;
 
                 foundPivotColumn = true;
                 //--------------------------------------------------------------
@@ -586,7 +600,6 @@ SLIP_info SLIP_LU_analyze_and_factorize
             // then the matrix is singular
             if (nthMin >= bs_nz && !foundPivotColumn)
             {
-                printf("%s line %d\n",__FILE__,__LINE__);
 
                 for (int32_t nthcand = 0; nthcand < ncand; nthcand++)
                 {
@@ -612,7 +625,31 @@ SLIP_info SLIP_LU_analyze_and_factorize
         }
     }
 
+    /*        printf("%s line %d %p\n",__FILE__, __LINE__, cands);
+    slip_delete_cand_columns(&cands);
+            printf("%s line %d\n",__FILE__, __LINE__);
+    SLIP_FREE(index);          
+            printf("%s line %d\n",__FILE__, __LINE__);
+    SLIP_FREE(bs);            
+            printf("%s line %d\n",__FILE__, __LINE__);
+    SLIP_FREE(range_stack);  
+            printf("%s line %d\n",__FILE__, __LINE__);
+    SLIP_FREE(row_perm);    
+            printf("%s line %d\n",__FILE__, __LINE__);
+    SLIP_FREE(xi);         
+            printf("%s line %d\n",__FILE__, __LINE__);
+    SLIP_FREE(x);         
+            printf("%s line %d\n",__FILE__, __LINE__);
+    SLIP_FREE(h);        
+            printf("%s line %d\n",__FILE__, __LINE__);
+    SLIP_FREE(Lb);      
+            printf("%s line %d\n",__FILE__, __LINE__);
+    SLIP_FREE(rhos_bs);
+            printf("%s line %d\n",__FILE__, __LINE__);
+    SLIP_MPFR_CLEAR(temp);*/
+
     SLIP_FREE_WORKSPACE;
+    //        printf("%s line %d\n",__FILE__, __LINE__);
     // Finalize L and U
     L->nz = lnz;
     U->nz = unz;
@@ -637,7 +674,10 @@ SLIP_info SLIP_LU_analyze_and_factorize
     {
         U->i[i] = pinv[U->i[i]];
     }
-
-    return SLIP_OK;
+/*printf("time used in est: %lf\n", est_time);
+printf("time used in init: %lf\n", init_time);
+printf("time used in sorting: %lf\n", sort_time);
+printf("time used in REF update: %lf\n", total_time);
+*/    return SLIP_OK;
 }
 #undef CAND_SIZE

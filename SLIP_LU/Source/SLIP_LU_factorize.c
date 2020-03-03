@@ -62,6 +62,7 @@ SLIP_info SLIP_LU_factorize
     mpz_t sigma; SLIP_MPZ_SET_NULL(sigma);
     mpfr_t temp; SLIP_MPFR_SET_NULL(temp);
     mpz_t* x = NULL ;
+    double total_time = 0 ;
 
     SLIP_CHECK(SLIP_mpz_init(sigma));
     SLIP_CHECK(SLIP_mpfr_init2(temp, 256));
@@ -210,8 +211,11 @@ SLIP_info SLIP_LU_factorize
         }
 
         // LDx = A(:,k)
+        clock_t tic = clock();
         SLIP_CHECK(slip_REF_triangular_solve(&top, L, A, k, xi, S->q, rhos,
             pinv, row_perm, h, x));
+        clock_t toc = clock();
+        total_time = total_time + (double) (toc - tic)/ CLOCKS_PER_SEC;
         // Obtain pivot index
         SLIP_CHECK(slip_get_pivot(&pivot, x, pivs, n, top, xi, option->pivot,
             col, k, rhos, pinv, row_perm, option->tol));
@@ -304,6 +308,7 @@ SLIP_info SLIP_LU_factorize
     SLIP_CHECK (SLIP_spok (L, option)) ;
     SLIP_CHECK (SLIP_spok (U, option)) ;
     #endif
+    //printf(" time used in REF solve: %lf \n", total_time);
 
     return ok;
 }

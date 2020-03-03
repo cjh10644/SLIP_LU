@@ -21,6 +21,8 @@ slip_column* slip_initialize_column
     col->nz            = 0;
     col->nz_mpz        = 0;
     col->max_mpz       = 0;
+    col->real_lnz      = 0;
+    col->unz           =-1;
 
     col->i  = (int32_t*) SLIP_malloc(nrow * sizeof(int32_t));
     if (!col->i)  {return NULL;}
@@ -31,15 +33,25 @@ slip_column* slip_initialize_column
         return NULL;
     }
 
-    // only allocate memory for the mpz_t array without initializing each entry.
-    // Entries are initialized for index < nz_mpz
-    col->x  = (mpz_t*) SLIP_malloc(nrow * sizeof(mpz_t));
-    if (!col->x)
+    col->h  = (int32_t*) SLIP_malloc(nrow * sizeof(int32_t));;
+    if (!col->h)
     {
         SLIP_FREE(col->i);
         SLIP_FREE(col->bs);
         return NULL;
     }
+
+    // only allocate memory for the mpz_t array without initializing each entry.
+    // Entries are initialized for index < max_mpz
+    col->x  = (mpz_t*) SLIP_malloc(nrow * sizeof(mpz_t));
+    if (!col->x)
+    {
+        SLIP_FREE(col->i);
+        SLIP_FREE(col->bs);
+        SLIP_FREE(col->h);
+        return NULL;
+    }
+
     return col;
 }
 

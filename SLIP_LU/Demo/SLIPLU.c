@@ -136,10 +136,10 @@ int main( int argc, char* argv[])
     int rat = 1;
     SLIP_info ok, check = SLIP_OK ;
     char *mat_name, *rhs_name;
-    mat_name = "../ExampleMats/test_mat.txt";// Set demo matrix and RHS name
-    rhs_name = "../ExampleMats/test_rhs.txt";
     mat_name = "../ExampleMats/NSR8K_mat.txt";// Set demo matrix and RHS name
     rhs_name = "../ExampleMats/NSR8K_v.txt";
+    mat_name = "../ExampleMats/test_mat.txt";// Set demo matrix and RHS name
+    rhs_name = "../ExampleMats/test_rhs.txt";
     //mat_name = "../ExampleMats/10teams_mat.txt";// Set demo matrix and RHS name
     //rhs_name = "../ExampleMats/10teams_v.txt";
 
@@ -288,7 +288,7 @@ int main( int argc, char* argv[])
 
     if (check == SLIP_OK)
     {
-        printf ("Solution is verified to be exact.\n") ;
+        //printf ("Solution is verified to be exact.\n") ;
     }
     else if (check == SLIP_INCORRECT)
     {
@@ -352,19 +352,24 @@ int main( int argc, char* argv[])
         total_size += size;
     }
 
-    printf("\nbit size of rhos: \t\t\t%ld", rhos_size);
+    /*printf("\nbit size of rhos: \t\t\t%ld", rhos_size);
     printf("\nbit size of L+U: \t\t\t%ld", total_size-rhos_size);
-
     printf("\nNumber of L+U nonzeros: \t\t%d",
         (L->nz) + (U->nz) - (L->m));
     printf("\nSymbolic analysis time: \t\t%lf", t_sym);
     printf("\nSLIP LU Factorization time: \t\t%lf", t_factor);
     printf("\nFB Substitution time: \t\t\t%lf\n\n", t_solve);
+    */
+    printf("%ld", rhos_size);
+    printf("\n%ld", total_size-rhos_size);
+    printf("\n%d",  (L->nz) + (U->nz) - (L->m));
+    printf("\n%lf", t_sym+t_factor);
+    printf("\n%lf\n", t_solve);
 
     //--------------------------------------------------------------------------
     // Free Memory
     //--------------------------------------------------------------------------
     FREE_WORKSPACE;
-    printf ("\n%s: all tests passed\n\n", __FILE__) ;
+    //printf ("\n%s: all tests passed\n\n", __FILE__) ;
     return 0;
 }

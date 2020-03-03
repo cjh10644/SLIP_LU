@@ -13,6 +13,7 @@ void slip_delete_cand_columns
     {
         slip_delete_column( &( (*M)->columns[i] ) );
     }
+    SLIP_FREE((*M)->columns);
     SLIP_FREE((*M)->col_index);
-    SLIP_FREE((*M));
+    SLIP_FREE(*M);
 }
